@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fast Local YouTube Downloader | Quality Selector | Auto Mux | Tubemate Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- SEO -->
+  <meta name="description" content="Tubemate Pro: self-hosted YouTube downloader using yt-dlp + ffmpeg. Choose single-video quality (1080p/720p/480p/360p) and we auto-download video+audio and merge. Playlists auto <=720p. Live progress. No uploads.">
+  <meta name="keywords" content="YouTube downloader, yt-dlp, ffmpeg, 1080p, 720p, 480p, 360p, auto mux, video audio merge, self-hosted, private, fast downloader, dark mode, light mode">
+  <link rel="canonical" href="https://localhost/" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Tubemate Pro — Quality Selector, Auto Mux (yt-dlp + ffmpeg)">
+  <meta property="og:description" content="Pick a quality for single videos; we download video+audio and merge automatically. Playlists auto <=720p.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&q=80&auto=format&fit=crop">
+  <meta property="og:url" content="https://localhost/">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tubemate Pro — Quality Selector, Auto Mux">
+  <meta name="twitter:description" content="yt-dlp + ffmpeg. Quality menu for single videos; playlists auto <=720p.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&q=80&auto=format&fit=crop">
+
+  <style>
+    /* Dark/Light theme tokens */
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2b;
+      --muted: #8aa0c5;
+      --text: #e9f0ff;
+      --accent: #7c9cff;
+      --accent-2: #16d2aa;
+      --danger: #ff6b6b;
+      --border: #22314f;
+      --chip: #18233a;
+      --link: #9bb4ff;
+      --shadow: 0 12px 50px rgba(0,0,0,0.25);
+      --panel-grad: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      --page-grad: radial-gradient(1200px 700px at 20% -10%, #12203a 0%, #0b1220 60%);
+    }
+    :root.light {
+      --bg: #f6f8fc;
+      --panel: #ffffff;
+      --muted: #5a6a85;
+      --text: #0f172a;
+      --accent: #4c6cff;
+      --accent-2: #14b8a6;
+      --danger: #e11d48;
+      --border: #e5e7eb;
+      --chip: #eef2ff;
+      --link: #1d4ed8;
+      --shadow: 0 12px 40px rgba(0,0,0,0.08);
+      --panel-grad: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+      --page-grad: radial-gradient(1200px 700px at 20% -10%, #eaf0ff 0%, #f6f8fc 60%);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page-grad), var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      line-height: 1.5;
+    }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px 60px; }
+
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: color-mix(in srgb, var(--bg) 70%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center; color: #0b1220; font-weight: 800;
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+    .brand h1 { font-size: 18px; margin: 0; }
+    .menu { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .menu a { padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; }
+    .menu a.active, .menu a:hover { background: color-mix(in srgb, var(--panel) 88%, transparent); border-color: var(--border); }
+    .mode-toggle {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      cursor: pointer; user-select: none;
+    }
+
+    /* Sections */
+    .section {
+      background: var(--panel-grad), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin: 18px 0;
+    }
+    .grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; color: color-mix(in srgb, var(--text) 92%, transparent); }
+    input[type=text] {
+      width: 100%; padding: 12px 14px; background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); outline: none;
+    }
+    input[type=text]::placeholder { color: var(--muted); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
+      background: color-mix(in srgb, var(--panel) 95%, transparent); color: var(--text); font-weight: 600; cursor: pointer;
+    }
+    button.primary { background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 65%, #0000)); border-color: color-mix(in srgb, var(--accent) 70%, var(--border)); color: #0b1220; }
+    button.ghost { background: color-mix(in srgb, var(--panel) 90%, transparent); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .chip { padding: 6px 10px; font-size: 12px; color: color-mix(in srgb, var(--text) 92%, transparent); background: var(--chip); border: 1px solid var(--border); border-radius: 999px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    select {
+      width: 100%; padding: 10px 12px; background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text);
+    }
+    .title { font-size: 14px; font-weight: 700; color: color-mix(in srgb, var(--text) 96%, transparent); margin: 8px 0 10px; }
+    .status { margin-top: 16px; padding: 12px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid var(--border); min-height: 44px; font-size: 13px; }
+    .status .progress { height: 8px; background: color-mix(in srgb, var(--border) 40%, transparent); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+    .status .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .2s ease; }
+    .error { color: var(--danger); font-weight: 700; }
+    .previewBox { min-height:180px; }
+
+    /* Hero + features under main downloader */
+    .hero {
+      position: relative; overflow: hidden; border-radius: 16px;
+      background: var(--panel-grad), var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      display: grid; gap: 16px;
+      grid-template-columns: 1.1fr .9fr;
+    }
+    @media (max-width: 980px) { .hero { grid-template-columns: 1fr; } }
+    .hero h2 { margin: 6px 0 10px; font-size: 28px; line-height: 1.2; }
+    .hero p { margin: 0; color: var(--muted); }
+    .hero .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .badge { padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; background: color-mix(in srgb, var(--panel) 90%, transparent); font-size: 12px; color: color-mix(in srgb, var(--text) 92%, transparent); }
+    .hero-visual { position: relative; min-height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+    .hero-visual img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+
+    .features { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 980px) { .features { grid-template-columns: 1fr; } }
+    .card { background: color-mix(in srgb, var(--panel) 94%, transparent); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+    .card h3 { margin: 6px 0 6px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; }
+    .card img { width: 100%; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+
+    footer { margin: 24px 0 40px; color: var(--muted); font-size: 12px; text-align: center; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .hr { height: 1px; background: var(--border); margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="nav" role="navigation" aria-label="Main">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">Y</div>
+          <h1>Tubemate Pro</h1>
+        </div>
+        <nav class="menu">
+          <a href="#top" class="active">Downloader</a>
+          <a href="#about">About</a>
+          <a href="#help">Help</a>
+          <a href="#settings">Settings</a>
+          <div class="mode-toggle" id="modeToggle" role="button" aria-pressed="false" title="Toggle dark/light">
+            <span id="modeIcon">🌙</span>
+            <span id="modeText">Dark</span>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 1) MAIN DOWNLOADER ON TOP -->
+    <a id="top"></a>
+    <section class="section" aria-label="Downloader">
+      <div class="grid">
+        <div>
+          <label for="yturl">Paste YouTube link</label>
+          <input id="yturl" type="text" placeholder="https://www.youtube.com/watch?v=...  or playlist URL" autocomplete="off" />
+          <div class="buttons" style="margin-top:10px">
+            <button id="btnGet" class="primary" aria-label="Analyze URL">Analyze</button>
+            <button id="btnClear" class="ghost" aria-label="Clear form">Clear</button>
+          </div>
+          <div class="hint">Single video: choose a quality or go custom (exact IDs). We’ll download video+audio and merge. Playlist: auto <=720p.</div>
+
+          <div id="meta" class="chips" style="display:none"></div>
+
+          <!-- Quality menu for single-video -->
+          <div id="qualitySection" style="margin-top:16px; display:none">
+            <div class="title">Quality (Single Video)</div>
+            <label for="qualitySelect">Choose target quality</label>
+            <select id="qualitySelect" aria-label="Quality">
+              <option value="auto1080">1080p (best <=1080p + best audio)</option>
+              <option value="auto720" selected>720p (best <=720p + best audio)</option>
+              <option value="auto480">480p (best <=480p + best audio)</option>
+              <option value="auto360">360p (best <=360p + best audio)</option>
+              <option value="custom">Custom (pick exact video-only + audio-only)</option>
+            </select>
+
+            <!-- Advanced: exact formats -->
+            <div id="customFormats" class="split" role="group" aria-label="Custom formats" style="display:none; margin-top:10px">
+              <div>
+                <label for="videoSelect">Video-only (exact format)</label>
+                <select id="videoSelect" aria-label="Video-only formats"></select>
+              </div>
+              <div>
+                <label for="audioSelect">Audio-only (exact format)</label>
+                <select id="audioSelect" aria-label="Audio-only formats"></select>
+              </div>
+            </div>
+            <div class="hint">Auto options pick the best video-only stream up to the chosen resolution and the best audio-only stream; then mux.</div>
+          </div>
+
+          <div id="downloadOptions" style="margin-top:16px; display:none">
+            <div class="row">
+              <div>
+                <label for="outDir">Output folder (server path) — required</label>
+                <input id="outDir" type="text" placeholder="e.g. ~/Downloads" required aria-required="true" />
+              </div>
+              <div>
+                <label for="mode">Mode</label>
+                <select id="mode" aria-label="Download mode">
+                  <option value="single">Single video</option>
+                  <option value="playlist">Playlist (<=720p)</option>
+                </select>
+              </div>
+            </div>
+            <div class="buttons" style="margin-top:12px">
+              <button id="btnDownload" class="primary" disabled aria-disabled="true">Download</button>
+              <button id="btnStop" class="ghost">Stop Stream</button>
+            </div>
+            <div id="pathError" class="hint" style="color: var(--danger); display:none">Output path is required.</div>
+          </div>
+
+          <div id="status" class="status" style="display:none" aria-live="polite">
+            <div id="statusText">Waiting…</div>
+            <div class="progress" aria-hidden="true"><div id="bar" class="bar"></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="title">Video preview</div>
+          <div id="preview" class="section previewBox" style="display:block">
+            <div class="hint">We’ll show thumbnail & title here after Analyze.</div>
+            <div id="thumbWrap" style="margin-top:10px; display:none">
+              <img id="thumb" style="max-width:100%; border-radius: 10px; border:1px solid var(--border);" alt="thumbnail" loading="lazy" />
+              <div id="vtitle" style="margin-top:8px; font-weight:700;"></div>
+              <div id="source" class="mono" style="color: var(--muted); font-size:12px; margin-top:4px;">Source: YouTube • Auto-detected</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) EVERYTHING ELSE BELOW -->
+    <section class="hero" aria-label="Intro">
+      <div>
+        <h2>Choose Quality, We Download Video+Audio and Merge</h2>
+        <p>Select 1080p/720p/480p/360p for single videos — we’ll fetch separate video and audio streams and mux with ffmpeg (via yt-dlp). For playlists, we auto-download at <=720p.</p>
+        <div class="badges" aria-label="Highlights">
+          <span class="badge">yt-dlp + ffmpeg</span>
+          <span class="badge">Auto mux</span>
+          <span class="badge">Playlist <= 720p</span>
+          <span class="badge">Self-hosted & Private</span>
+          <span class="badge">Live Progress</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&q=80&auto=format&fit=crop" alt="" loading="lazy" />
+      </div>
+    </section>
+
+    <section class="section" aria-label="Features">
+      <div class="features">
+        <article class="card">
+          <img src="https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=1000&q=80&auto=format&fit=crop" alt="Manage playlists and channels" loading="lazy" />
+          <h3>Playlist Downloader</h3>
+          <p>Paste any YouTube playlist URL and download everything automatically at <=720p into a neat subfolder.</p>
+        </article>
+        <article class="card">
+          <img src="https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=1000&q=80&auto=format&fit=crop" alt="Choose video and audio quality" loading="lazy" />
+          <h3>Quality Menu + Custom</h3>
+          <p>Use the quality menu for one-click choices or switch to Custom to select exact video-only and audio-only formats.</p>
+        </article>
+        <article class="card">
+          <img src="https://images.unsplash.com/photo-1525182008055-f88b95ff7980?w=1000&q=80&auto=format&fit=crop" alt="Local secure downloader" loading="lazy" />
+          <h3>Local & Secure</h3>
+          <p>Self-hosted UI with no third-party uploads. Uses yt-dlp and ffmpeg for speed and reliability.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="about" class="section" aria-label="About">
+      <h2>About Tubemate Pro</h2>
+      <p>Tubemate Pro is a self-hosted, privacy-first YouTube downloader UI built on <strong>yt-dlp</strong> and <strong>ffmpeg</strong>. It supports single-video quality selection and auto-mux, plus playlist downloads at <=720p.</p>
+      <ul>
+        <li>Single videos: choose 1080p/720p/480p/360p or exact formats; muxed automatically.</li>
+        <li>Playlists: one click — auto <=720p and saved into a per-playlist folder.</li>
+        <li>Live progress via Server-Sent Events (SSE).</li>
+      </ul>
+      <p class="hint">Make sure yt-dlp and ffmpeg are installed and accessible in PATH.</p>
+    </section>
+
+    <section id="help" class="section" aria-label="Help">
+      <h2>Help & Tips</h2>
+      <ol>
+        <li>Paste a YouTube URL at the top and click Analyze.</li>
+        <li>If it’s a playlist, quality selection is skipped. Click Download to fetch at <=720p.</li>
+        <li>If it’s a single video, choose a quality (or Custom for exact IDs). We’ll download video+audio and merge.</li>
+        <li>Set your output folder (server path) and click Download. Watch the progress area for status.</li>
+      </ol>
+      <p class="hint">Common issues: Missing ffmpeg, firewall blocking SSE, invalid URL, or insufficient permissions for the output folder.</p>
+    </section>
+
+    <section id="settings" class="section" aria-label="Settings">
+      <h2>Settings</h2>
+      <p>These settings live only in your browser (local state):</p>
+      <div class="row">
+        <div>
+          <label for="defaultOut">Default Output Folder</label>
+          <input id="defaultOut" type="text" placeholder="~/Downloads" />
+        </div>
+        <div>
+          <label for="rememberUrl">Remember Last URL</label>
+          <select id="rememberUrl">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="buttons" style="margin-top:12px">
+        <button id="btnSaveSettings" class="primary">Save Settings</button>
+        <button id="btnResetSettings" class="ghost">Reset</button>
+      </div>
+      <p class="hint">No backend storage is used for these preferences.</p>
+    </section>
+
+    <footer>Choose a quality for single videos; we auto-mux video+audio. Playlists <=720p. Fast, secure, and local — powered by yt-dlp and ffmpeg.</footer>
+  </div>
+
+  <script>
+    // Theme toggle
+    const THEME_KEY = 'tubemate_theme_v1';
+    function applyTheme(t) {
+      const root = document.documentElement;
+      if (t === 'light') root.classList.add('light'); else root.classList.remove('light');
+      const isLight = root.classList.contains('light');
+      document.getElementById('modeText').textContent = isLight ? 'Light' : 'Dark';
+      document.getElementById('modeIcon').textContent = isLight ? '☀️' : '🌙';
+      document.getElementById('modeToggle').setAttribute('aria-pressed', String(isLight));
+    }
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'light' || saved === 'dark') applyTheme(saved);
+      else applyTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    }
+    function toggleTheme() {
+      const root = document.documentElement;
+      const nowLight = !root.classList.contains('light');
+      applyTheme(nowLight ? 'light' : 'dark');
+      localStorage.setItem(THEME_KEY, nowLight ? 'light' : 'dark');
+    }
+    document.getElementById('modeToggle').addEventListener('click', toggleTheme);
+    initTheme();
+
+    // Elements
+    const els = {
+      yturl: document.getElementById('yturl'),
+      btnGet: document.getElementById('btnGet'),
+      btnClear: document.getElementById('btnClear'),
+      meta: document.getElementById('meta'),
+      qualitySection: document.getElementById('qualitySection'),
+      qualitySelect: document.getElementById('qualitySelect'),
+      customFormats: document.getElementById('customFormats'),
+      videoSelect: document.getElementById('videoSelect'),
+      audioSelect: document.getElementById('audioSelect'),
+      downloadOptions: document.getElementById('downloadOptions'),
+      outDir: document.getElementById('outDir'),
+      mode: document.getElementById('mode'),
+      btnDownload: document.getElementById('btnDownload'),
+      btnStop: document.getElementById('btnStop'),
+      status: document.getElementById('status'),
+      statusText: document.getElementById('statusText'),
+      bar: document.getElementById('bar'),
+      thumbWrap: document.getElementById('thumbWrap'),
+      thumb: document.getElementById('thumb'),
+      vtitle: document.getElementById('vtitle'),
+      pathError: document.getElementById('pathError'),
+    };
+
+    let sse = null;
+    let lastIsPlaylist = false;
+    let cachedTitle = '';
+    let analyzedUrl = '';
+
+    function validatePath() {
+      const ok = !!els.outDir.value.trim();
+      els.btnDownload.disabled = !ok;
+      els.btnDownload.setAttribute('aria-disabled', String(!ok));
+      els.pathError.style.display = ok ? 'none' : 'block';
+      return ok;
+    }
+    els.outDir.addEventListener('input', validatePath);
+
+    function setStatus(msg, pct=null, isError=false) {
+      els.status.style.display = 'block';
+      els.statusText.textContent = msg;
+      els.statusText.className = isError ? 'error' : '';
+      if (pct !== null && pct !== undefined) {
+        els.bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      }
+    }
+
+    function resetUI(hideStatus=false) {
+      els.meta.style.display = 'none';
+      els.meta.innerHTML = '';
+      els.qualitySection.style.display = 'none';
+      els.customFormats.style.display = 'none';
+      els.videoSelect.innerHTML = '';
+      els.audioSelect.innerHTML = '';
+      els.downloadOptions.style.display = 'none';
+      if (hideStatus) { els.status.style.display = 'none'; } else { els.bar.style.width = '0%'; }
+      els.thumbWrap.style.display = 'none';
+      els.vtitle.textContent = '';
+      els.thumb.src = '';
+      cachedTitle = '';
+      lastIsPlaylist = false;
+      analyzedUrl = '';
+      stopSSE();
+      validatePath();
+    }
+
+    function isPlaylistUrl(u) {
+      const s = (u || '').toLowerCase();
+      return /[?&]list=/.test(s) || /\/playlist/.test(s);
+    }
+
+    async function analyze() {
+      resetUI();
+      const url = els.yturl.value.trim();
+      if (!url) { setStatus('Please paste a YouTube link.', null, true); return; }
+      analyzedUrl = url;
+      setStatus('Analyzing…', 0);
+
+      try {
+        const res = await fetch('/get_formats?url=' + encodeURIComponent(url));
+        const data = await res.json();
+        if (!res.ok) { setStatus(data.error || 'Failed to analyze link', null, true); return; }
+
+        cachedTitle = data.title || 'video';
+        lastIsPlaylist = !!data.is_playlist || isPlaylistUrl(url);
+
+        // Meta chips
+        els.meta.style.display = 'flex';
+        els.meta.innerHTML = '';
+        if (lastIsPlaylist) {
+          const chipP = document.createElement('div'); chipP.className = 'chip'; chipP.textContent = 'Detected: Playlist';
+          const chipQ = document.createElement('div'); chipQ.className = 'chip'; chipQ.textContent = '<=720p auto';
+          els.meta.appendChild(chipP); els.meta.appendChild(chipQ);
+        } else {
+          const vv = (data.video_formats || []).length;
+          const av = (data.audio_formats || []).length;
+          const chip2 = document.createElement('div'); chip2.className = 'chip'; chip2.textContent = `${vv} video-only`;
+          const chip3 = document.createElement('div'); chip3.className = 'chip'; chip3.textContent = `${av} audio-only`;
+          els.meta.appendChild(chip2); els.meta.appendChild(chip3);
+        }
+
+        // Preview
+        els.thumbWrap.style.display = 'block';
+        els.vtitle.textContent = cachedTitle;
+        try {
+          const idMatch = url.match(/[?&]v=([A-Za-z0-9_-]{11})/) || url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+          if (idMatch) { els.thumb.src = `https://i.ytimg.com/vi/${idMatch[1]}/hqdefault.jpg`; } else { els.thumbWrap.style.display = 'none'; }
+        } catch (_) { els.thumbWrap.style.display = 'none'; }
+
+        // Show options
+        els.downloadOptions.style.display = 'block';
+        validatePath();
+
+        if (lastIsPlaylist) {
+          els.qualitySection.style.display = 'none';
+          els.mode.value = 'playlist';
+          setStatus('Playlist detected. Ready to download at <=720p.', 0);
+        } else {
+          // Populate custom format lists for advanced mode
+          const vids = data.video_formats || [];
+          const auds = data.audio_formats || [];
+          function labelVideo(f) { return `${f.format_id} • ${f.height ? f.height+'p' : 'video'} ${f.fps ? f.fps+'fps' : ''} • .${f.ext} • ${f.filesize_hr || 'Unknown'}`; }
+          function labelAudio(f) { return `${f.format_id} • ${f.abr ? f.abr+'kbps' : 'audio'} • .${f.ext} • ${f.filesize_hr || 'Unknown'}`; }
+          els.videoSelect.innerHTML = vids.map(f => `<option value="${f.format_id}">${labelVideo(f)}</option>`).join('');
+          els.audioSelect.innerHTML = auds.map(f => `<option value="${f.format_id}">${labelAudio(f)}</option>`).join('');
+
+          els.qualitySection.style.display = 'block';
+          els.customFormats.style.display = (els.qualitySelect.value === 'custom') ? 'grid' : 'none';
+          els.mode.value = 'single';
+          setStatus('Choose a quality (or Custom) and click Download.', 0);
+        }
+      } catch (e) {
+        setStatus('Error: ' + e.message, null, true);
+      }
+    }
+
+    els.qualitySelect.addEventListener('change', () => {
+      els.customFormats.style.display = (els.qualitySelect.value === 'custom') ? 'grid' : 'none';
+    });
+
+    function buildSingleQualityString() {
+      const choice = els.qualitySelect.value;
+      if (choice === 'custom') {
+        const v = els.videoSelect.value;
+        const a = els.audioSelect.value;
+        if (!v || !a) return '';
+        return `${v}+${a}`;
+      }
+      // Auto quality profiles using yt-dlp selectors (video-only + bestaudio)
+      if (choice === 'auto1080') return 'bv*[height<=1080][vcodec!=none][acodec=none]+ba';
+      if (choice === 'auto720')  return 'bv*[height<=720][vcodec!=none][acodec=none]+ba';
+      if (choice === 'auto480')  return 'bv*[height<=480][vcodec!=none][acodec=none]+ba';
+      if (choice === 'auto360')  return 'bv*[height<=360][vcodec!=none][acodec=none]+ba';
+      return '';
+    }
+
+    function stopSSE() { if (sse) { sse.close(); sse = null; } }
+
+    function startDownload() {
+      if (!validatePath()) { setStatus('Output path is required.', null, true); return; }
+      stopSSE();
+
+      const url = analyzedUrl || els.yturl.value.trim();
+      if (!url) { setStatus('Paste a URL and Analyze first.', null, true); return; }
+
+      let mode = els.mode.value;
+      if (isPlaylistUrl(url)) mode = 'playlist';
+
+      const out = els.outDir.value.trim();
+      const params = new URLSearchParams({ url, download_path: out, is_playlist: String(mode === 'playlist') });
+
+      if (mode !== 'playlist') {
+        const q = buildSingleQualityString();
+        if (!q) { setStatus('Please choose a quality or select both custom formats.', null, true); return; }
+        params.set('quality', q);
+      }
+
+      setStatus('Starting…', 0);
+      sse = new EventSource('/progress?' + params.toString());
+      sse.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data.status === 'starting') setStatus('Starting…', 0);
+          else if (data.status === 'downloading') {
+            const pct = (data.percent != null) ? data.percent : null;
+            const pctText = (pct != null) ? data.percent.toFixed(1) + '%' : '';
+            setStatus(`Downloading ${pctText} — ${data.size} at ${data.speed} — ETA ${data.eta}`, pct);
+          } else if (data.status === 'destination') setStatus('Saving to: ' + data.message);
+          else if (data.status === 'already') setStatus('Already downloaded. ' + data.message);
+          else if (data.status === 'merging') setStatus('Merging…');
+          else if (data.status === 'postprocess') setStatus('Post-processing…');
+          else if (data.status === 'finished') { setStatus('Finished!', 100); stopSSE(); }
+          else if (data.status === 'error') { setStatus('Error: ' + data.message, null, true); stopSSE(); }
+        } catch (e) {
+          setStatus('Stream error: ' + e.message, null, true);
+          stopSSE();
+        }
+      };
+      sse.onerror = () => { setStatus('Connection lost.', null, true); stopSSE(); };
+    }
+
+    // Settings
+    const settings = {
+      key: 'tubemate_settings_v1',
+      get() { try { return JSON.parse(localStorage.getItem(this.key) || '{}'); } catch { return {}; } },
+      set(obj) { localStorage.setItem(this.key, JSON.stringify(obj)); }
+    };
+    const defOut = document.getElementById('defaultOut');
+    const rememberUrl = document.getElementById('rememberUrl');
+    const btnSaveSettings = document.getElementById('btnSaveSettings');
+    const btnResetSettings = document.getElementById('btnResetSettings');
+
+    function applySettingsToUI() {
+      const s = settings.get();
+      defOut.value = s.defaultOut || '~/Downloads';
+      rememberUrl.value = s.rememberUrl === 'no' ? 'no' : 'yes';
+      els.outDir.value = s.defaultOut || '~/Downloads';
+      const lastUrl = (s.rememberUrl === 'yes') ? (s.lastUrl || '') : '';
+      document.getElementById('yturl').value = lastUrl;
+      validatePath();
+    }
+    function saveSettings() {
+      const s = settings.get();
+      s.defaultOut = defOut.value.trim() || '~/Downloads';
+      s.rememberUrl = rememberUrl.value;
+      if (s.rememberUrl === 'yes') s.lastUrl = document.getElementById('yturl').value.trim();
+      else delete s.lastUrl;
+      settings.set(s);
+      alert('Settings saved.');
+    }
+    function resetSettings() { localStorage.removeItem(settings.key); applySettingsToUI(); alert('Settings reset.'); }
+
+    // Events
+    els.btnGet.addEventListener('click', analyze);
+    els.btnClear.addEventListener('click', () => { els.yturl.value=''; resetUI(true); });
+    els.btnDownload.addEventListener('click', startDownload);
+    els.btnStop.addEventListener('click', stopSSE);
+    els.yturl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') analyze();
+      const s = settings.get();
+      if (s.rememberUrl === 'yes') { s.lastUrl = els.yturl.value; settings.set(s); }
+    });
+    btnSaveSettings.addEventListener('click', saveSettings);
+    btnResetSettings.addEventListener('click', resetSettings);
+
+    // Init
+    applySettingsToUI();
+  </script>
+</body>
+</html>
