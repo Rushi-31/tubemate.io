@@ -2,29 +2,11 @@
 <html lang="en" data-theme="">
 <head>
   <meta charset="UTF-8" />
-  <title>Fast Local YouTube Downloader | Quality Selector | Auto Mux | Tubemate Pro</title>
+  <title>Tubemate Pro — Fast Local YouTube Downloader</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- SEO -->
-  <meta name="description" content="Tubemate Pro: self-hosted YouTube downloader using yt-dlp + ffmpeg. Choose single-video quality (1080p/720p/480p/360p) and we auto-download video+audio and merge. Playlists auto <=720p. Live progress. No uploads.">
-  <meta name="keywords" content="YouTube downloader, yt-dlp, ffmpeg, 1080p, 720p, 480p, 360p, auto mux, video audio merge, self-hosted, private, fast downloader, dark mode, light mode">
-  <link rel="canonical" href="https://localhost/" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Tubemate Pro — Quality Selector, Auto Mux (yt-dlp + ffmpeg)">
-  <meta property="og:description" content="Pick a quality for single videos; we download video+audio and merge automatically. Playlists auto <=720p.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&q=80&auto=format&fit=crop">
-  <meta property="og:url" content="https://localhost/">
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Tubemate Pro — Quality Selector, Auto Mux">
-  <meta name="twitter:description" content="yt-dlp + ffmpeg. Quality menu for single videos; playlists auto <=720p.">
-  <meta name="twitter:image" content="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&q=80&auto=format&fit=crop">
-
+  <meta name="description" content="Self-hosted YouTube downloader using yt-dlp + ffmpeg. Choose quality and auto-mux video+audio. Playlists <=720p.">
   <style>
-    /* Dark/Light theme tokens */
+    /* Theme tokens */
     :root {
       --bg: #0b1220;
       --panel: #111a2b;
@@ -55,7 +37,6 @@
       --panel-grad: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
       --page-grad: radial-gradient(1200px 700px at 20% -10%, #eaf0ff 0%, #f6f8fc 60%);
     }
-
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -67,7 +48,6 @@
     a { color: var(--link); text-decoration: none; }
     a:hover { text-decoration: underline; }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px 60px; }
-
     header {
       position: sticky; top: 0; z-index: 50;
       background: color-mix(in srgb, var(--bg) 70%, transparent);
@@ -77,14 +57,15 @@
     .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
     .brand { display: flex; align-items: center; gap: 10px; }
     .logo {
-      width: 36px; height: 36px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      display: grid; place-items: center; color: #0b1220; font-weight: 800;
-      box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+      width: 50px; height: 50px; border-radius: 10px;
+      display: grid; place-items: center; overflow: hidden;
     }
+    .logo img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 4px; }
     .brand h1 { font-size: 18px; margin: 0; }
-    .menu { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-    .menu a { padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; }
+    .menu { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .menu a {
+      padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; color: var(--text);
+    }
     .menu a.active, .menu a:hover { background: color-mix(in srgb, var(--panel) 88%, transparent); border-color: var(--border); }
     .mode-toggle {
       display: inline-flex; align-items: center; gap: 8px;
@@ -134,7 +115,6 @@
     .error { color: var(--danger); font-weight: 700; }
     .previewBox { min-height:180px; }
 
-    /* Hero + features under main downloader */
     .hero {
       position: relative; overflow: hidden; border-radius: 16px;
       background: var(--panel-grad), var(--panel);
@@ -150,7 +130,7 @@
     .hero .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
     .badge { padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; background: color-mix(in srgb, var(--panel) 90%, transparent); font-size: 12px; color: color-mix(in srgb, var(--text) 92%, transparent); }
     .hero-visual { position: relative; min-height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-    .hero-visual img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+    .hero-visual img { width: 100%; height: 100%; object-fit: cover; }
 
     .features { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); }
     @media (max-width: 980px) { .features { grid-template-columns: 1fr; } }
@@ -160,8 +140,14 @@
     .card img { width: 100%; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
 
     footer { margin: 24px 0 40px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    /* "Pages" via client-side routing */
+    main > section { display: none; }
+    main > section.active { display: block; }
+
+    /* Utilities */
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    .hr { height: 1px; background: var(--border); margin: 16px 0; }
+    .spacer { height: 16px; }
   </style>
 </head>
 <body>
@@ -169,14 +155,16 @@
     <header>
       <div class="nav" role="navigation" aria-label="Main">
         <div class="brand">
-          <div class="logo" aria-hidden="true">Y</div>
+          <div class="logo" aria-hidden="true">
+            <img src="static/assets/logo.png" alt="" />
+          </div>
           <h1>Tubemate Pro</h1>
         </div>
         <nav class="menu">
-          <a href="#top" class="active">Downloader</a>
-          <a href="#about">About</a>
-          <a href="#help">Help</a>
-          <a href="#settings">Settings</a>
+          <a href="#/downloader" data-route>Downloader</a>
+          <a href="#/about" data-route>About</a>
+          <a href="#/help" data-route>Help</a>
+          <a href="#/settings" data-route>Settings</a>
           <div class="mode-toggle" id="modeToggle" role="button" aria-pressed="false" title="Toggle dark/light">
             <span id="modeIcon">🌙</span>
             <span id="modeText">Dark</span>
@@ -185,184 +173,223 @@
       </div>
     </header>
 
-    <!-- 1) MAIN DOWNLOADER ON TOP -->
-    <a id="top"></a>
-    <section class="section" aria-label="Downloader">
-      <div class="grid">
-        <div>
-          <label for="yturl">Paste YouTube link</label>
-          <input id="yturl" type="text" placeholder="https://www.youtube.com/watch?v=...  or playlist URL" autocomplete="off" />
-          <div class="buttons" style="margin-top:10px">
-            <button id="btnGet" class="primary" aria-label="Analyze URL">Analyze</button>
-            <button id="btnClear" class="ghost" aria-label="Clear form">Clear</button>
-          </div>
-          <div class="hint">Single video: choose a quality or go custom (exact IDs). We’ll download video+audio and merge. Playlist: auto <=720p.</div>
-
-          <div id="meta" class="chips" style="display:none"></div>
-
-          <!-- Quality menu for single-video -->
-          <div id="qualitySection" style="margin-top:16px; display:none">
-            <div class="title">Quality (Single Video)</div>
-            <label for="qualitySelect">Choose target quality</label>
-            <select id="qualitySelect" aria-label="Quality">
-              <option value="auto1080">1080p (best <=1080p + best audio)</option>
-              <option value="auto720" selected>720p (best <=720p + best audio)</option>
-              <option value="auto480">480p (best <=480p + best audio)</option>
-              <option value="auto360">360p (best <=360p + best audio)</option>
-              <option value="custom">Custom (pick exact video-only + audio-only)</option>
-            </select>
-
-            <!-- Advanced: exact formats -->
-            <div id="customFormats" class="split" role="group" aria-label="Custom formats" style="display:none; margin-top:10px">
-              <div>
-                <label for="videoSelect">Video-only (exact format)</label>
-                <select id="videoSelect" aria-label="Video-only formats"></select>
+    <main id="app">
+      <!-- PAGE: DOWNLOADER -->
+      <section id="page-downloader" aria-label="Downloader">
+        <div class="section">
+          <div class="grid">
+            <div>
+              <label for="yturl">Paste YouTube link</label>
+              <input id="yturl" type="text" placeholder="https://www.youtube.com/watch?v=... or playlist URL" autocomplete="off" />
+              <div class="buttons" style="margin-top:10px">
+                <button id="btnGet" class="primary" aria-label="Analyze URL">Analyze</button>
+                <button id="btnClear" class="ghost" aria-label="Clear form">Clear</button>
               </div>
-              <div>
-                <label for="audioSelect">Audio-only (exact format)</label>
-                <select id="audioSelect" aria-label="Audio-only formats"></select>
-              </div>
-            </div>
-            <div class="hint">Auto options pick the best video-only stream up to the chosen resolution and the best audio-only stream; then mux.</div>
-          </div>
+              <div class="hint">Single video: choose a quality or custom exact IDs. We’ll download video+audio and merge. Playlist: auto <=720p.</div>
 
-          <div id="downloadOptions" style="margin-top:16px; display:none">
-            <div class="row">
-              <div>
-                <label for="outDir">Output folder (server path) — required</label>
-                <input id="outDir" type="text" placeholder="e.g. ~/Downloads" required aria-required="true" />
-              </div>
-              <div>
-                <label for="mode">Mode</label>
-                <select id="mode" aria-label="Download mode">
-                  <option value="single">Single video</option>
-                  <option value="playlist">Playlist (<=720p)</option>
+              <div id="meta" class="chips" style="display:none"></div>
+
+              <div id="qualitySection" style="margin-top:16px; display:none">
+                <div class="title">Quality (Single Video)</div>
+                <label for="qualitySelect">Choose target quality</label>
+                <select id="qualitySelect" aria-label="Quality">
+                  <option value="auto1080">1080p (best <=1080p + best audio)</option>
+                  <option value="auto720" selected>720p (best <=720p + best audio)</option>
+                  <option value="auto480">480p (best <=480p + best audio)</option>
+                  <option value="auto360">360p (best <=360p + best audio)</option>
+                  <option value="custom">Custom (pick exact video-only + audio-only)</option>
                 </select>
+
+                <div id="customFormats" class="split" role="group" aria-label="Custom formats" style="display:none; margin-top:10px">
+                  <div>
+                    <label for="videoSelect">Video-only (exact format)</label>
+                    <select id="videoSelect" aria-label="Video-only formats"></select>
+                  </div>
+                  <div>
+                    <label for="audioSelect">Audio-only (exact format)</label>
+                    <select id="audioSelect" aria-label="Audio-only formats"></select>
+                  </div>
+                </div>
+                <div class="hint">Auto options pick the best video-only stream up to the chosen resolution and the best audio-only stream; then mux.</div>
+              </div>
+
+              <div id="downloadOptions" style="margin-top:16px; display:none">
+                <div class="row">
+                  <div>
+                    <label for="outDir">Output folder (server path) — required</label>
+                    <input id="outDir" type="text" placeholder="e.g. ~/Downloads" required aria-required="true" />
+                  </div>
+                  <div>
+                    <label for="mode">Mode</label>
+                    <select id="mode" aria-label="Download mode">
+                      <option value="single">Single video</option>
+                      <option value="playlist">Playlist (<=720p)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="buttons" style="margin-top:12px">
+                  <button id="btnDownload" class="primary" disabled aria-disabled="true">Download</button>
+                  <button id="btnStop" class="ghost">Stop Stream</button>
+                </div>
+                <div id="pathError" class="hint" style="color: var(--danger); display:none">Output path is required.</div>
+              </div>
+
+              <div id="status" class="status" style="display:none" aria-live="polite">
+                <div id="statusText">Waiting…</div>
+                <div class="progress" aria-hidden="true"><div id="bar" class="bar"></div></div>
               </div>
             </div>
-            <div class="buttons" style="margin-top:12px">
-              <button id="btnDownload" class="primary" disabled aria-disabled="true">Download</button>
-              <button id="btnStop" class="ghost">Stop Stream</button>
-            </div>
-            <div id="pathError" class="hint" style="color: var(--danger); display:none">Output path is required.</div>
-          </div>
 
-          <div id="status" class="status" style="display:none" aria-live="polite">
-            <div id="statusText">Waiting…</div>
-            <div class="progress" aria-hidden="true"><div id="bar" class="bar"></div></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="title">Video preview</div>
-          <div id="preview" class="section previewBox" style="display:block">
-            <div class="hint">We’ll show thumbnail & title here after Analyze.</div>
-            <div id="thumbWrap" style="margin-top:10px; display:none">
-              <img id="thumb" style="max-width:100%; border-radius: 10px; border:1px solid var(--border);" alt="thumbnail" loading="lazy" />
-              <div id="vtitle" style="margin-top:8px; font-weight:700;"></div>
-              <div id="source" class="mono" style="color: var(--muted); font-size:12px; margin-top:4px;">Source: YouTube • Auto-detected</div>
+            <div>
+              <div class="title">Video preview</div>
+              <div id="preview" class="section previewBox" style="display:block">
+                <div class="hint">We’ll show thumbnail & title here after Analyze.</div>
+                <div id="thumbWrap" style="margin-top:10px; display:none">
+                  <img id="thumb" style="max-width:100%; border-radius: 10px; border:1px solid var(--border);" alt="thumbnail" loading="lazy" />
+                  <div id="vtitle" style="margin-top:8px; font-weight:700;"></div>
+                  <div id="source" class="mono" style="color: var(--muted); font-size:12px; margin-top:4px;">Source: YouTube • Auto-detected</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- 2) EVERYTHING ELSE BELOW -->
-    <section class="hero" aria-label="Intro">
-      <div>
-        <h2>Choose Quality, We Download Video+Audio and Merge</h2>
-        <p>Select 1080p/720p/480p/360p for single videos — we’ll fetch separate video and audio streams and mux with ffmpeg (via yt-dlp). For playlists, we auto-download at <=720p.</p>
-        <div class="badges" aria-label="Highlights">
-          <span class="badge">yt-dlp + ffmpeg</span>
-          <span class="badge">Auto mux</span>
-          <span class="badge">Playlist <= 720p</span>
-          <span class="badge">Self-hosted & Private</span>
-          <span class="badge">Live Progress</span>
-        </div>
-      </div>
-      <div class="hero-visual" aria-hidden="true">
-        <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&q=80&auto=format&fit=crop" alt="" loading="lazy" />
-      </div>
-    </section>
+        <section class="hero" aria-label="Intro">
+          <div>
+            <h2>Choose Quality, We Download Video+Audio and Merge</h2>
+            <p>Select 1080p/720p/480p/360p for single videos — we’ll fetch separate video and audio streams and mux with ffmpeg (via yt-dlp). For playlists, we auto-download at <=720p.</p>
+            <div class="badges" aria-label="Highlights">
+              <span class="badge">yt-dlp + ffmpeg</span>
+              <span class="badge">Auto mux</span>
+              <span class="badge">Playlist <= 720p</span>
+              <span class="badge">Self-hosted & Private</span>
+              <span class="badge">Live Progress</span>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="static/assets/robot.jpg" alt="" loading="lazy" />
+          </div>
+        </section>
+      </section>
 
-    <section class="section" aria-label="Features">
-      <div class="features">
-        <article class="card">
-          <img src="https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=1000&q=80&auto=format&fit=crop" alt="Manage playlists and channels" loading="lazy" />
-          <h3>Playlist Downloader</h3>
-          <p>Paste any YouTube playlist URL and download everything automatically at <=720p into a neat subfolder.</p>
-        </article>
-        <article class="card">
-          <img src="https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=1000&q=80&auto=format&fit=crop" alt="Choose video and audio quality" loading="lazy" />
-          <h3>Quality Menu + Custom</h3>
-          <p>Use the quality menu for one-click choices or switch to Custom to select exact video-only and audio-only formats.</p>
-        </article>
-        <article class="card">
-          <img src="https://images.unsplash.com/photo-1525182008055-f88b95ff7980?w=1000&q=80&auto=format&fit=crop" alt="Local secure downloader" loading="lazy" />
-          <h3>Local & Secure</h3>
-          <p>Self-hosted UI with no third-party uploads. Uses yt-dlp and ffmpeg for speed and reliability.</p>
-        </article>
-      </div>
-    </section>
+      <!-- PAGE: ABOUT -->
+      <section id="page-about" aria-label="About">
+        <section class="hero">
+          <div>
+            <h2>About Tubemate Pro</h2>
+            <p>Self‑hosted, privacy‑first YouTube downloader built on yt‑dlp and ffmpeg. Choose quality presets or custom formats for single videos; playlists auto download at <=720p.</p>
+            <div class="badges">
+              <span class="badge">Private</span>
+              <span class="badge">Fast</span>
+              <span class="badge">Reliable</span>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop" alt="" loading="lazy" />
+          </div>
+        </section>
 
-    <section id="about" class="section" aria-label="About">
-      <h2>About Tubemate Pro</h2>
-      <p>Tubemate Pro is a self-hosted, privacy-first YouTube downloader UI built on <strong>yt-dlp</strong> and <strong>ffmpeg</strong>. It supports single-video quality selection and auto-mux, plus playlist downloads at <=720p.</p>
-      <ul>
-        <li>Single videos: choose 1080p/720p/480p/360p or exact formats; muxed automatically.</li>
-        <li>Playlists: one click — auto <=720p and saved into a per-playlist folder.</li>
-        <li>Live progress via Server-Sent Events (SSE).</li>
-      </ul>
-      <p class="hint">Make sure yt-dlp and ffmpeg are installed and accessible in PATH.</p>
-    </section>
+        <section class="section">
+          <div class="features">
+            <article class="card">
+              <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1400&auto=format&fit=crop" alt="" loading="lazy" />
+              <h3>Quality Selection</h3>
+              <p>Pick 1080p/720p/480p/360p or choose exact video‑only and audio‑only formats.</p>
+            </article>
+            <article class="card">
+              <img src="https://images.unsplash.com/photo-1470167290877-7d5d3446de4c?q=80&w=1400&auto=format&fit=crop" alt="" loading="lazy" />
+              <h3>Auto Mux</h3>
+              <p>We download separate video and audio streams and merge automatically.</p>
+            </article>
+            <article class="card">
+              <img src="https://images.unsplash.com/photo-1447433819943-74a20887a81e?q=80&w=1400&auto=format&fit=crop" alt="" loading="lazy" />
+              <h3>Playlist Mode</h3>
+              <p>Playlists download at <=720p, organized into subfolders.</p>
+            </article>
+          </div>
+        </section>
+      </section>
 
-    <section id="help" class="section" aria-label="Help">
-      <h2>Help & Tips</h2>
-      <ol>
-        <li>Paste a YouTube URL at the top and click Analyze.</li>
-        <li>If it’s a playlist, quality selection is skipped. Click Download to fetch at <=720p.</li>
-        <li>If it’s a single video, choose a quality (or Custom for exact IDs). We’ll download video+audio and merge.</li>
-        <li>Set your output folder (server path) and click Download. Watch the progress area for status.</li>
-      </ol>
-      <p class="hint">Common issues: Missing ffmpeg, firewall blocking SSE, invalid URL, or insufficient permissions for the output folder.</p>
-    </section>
+      <!-- PAGE: HELP -->
+      <section id="page-help" aria-label="Help">
+        <section class="hero">
+          <div>
+            <h2>Help & Tips</h2>
+            <p>How to analyze links, choose quality, use playlist mode, and troubleshoot common issues.</p>
+            <div class="badges">
+              <span class="badge">Quick Start</span>
+              <span class="badge">FAQ</span>
+              <span class="badge">Troubleshooting</span>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="https://images.unsplash.com/photo-1520975922284-8b456906c813?q=80&w=1600&auto=format&fit=crop" alt="" loading="lazy" />
+          </div>
+        </section>
 
-    <section id="settings" class="section" aria-label="Settings">
-      <h2>Settings</h2>
-      <p>These settings live only in your browser (local state):</p>
-      <div class="row">
-        <div>
-          <label for="defaultOut">Default Output Folder</label>
-          <input id="defaultOut" type="text" placeholder="~/Downloads" />
-        </div>
-        <div>
-          <label for="rememberUrl">Remember Last URL</label>
-          <select id="rememberUrl">
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-      </div>
-      <div class="buttons" style="margin-top:12px">
-        <button id="btnSaveSettings" class="primary">Save Settings</button>
-        <button id="btnResetSettings" class="ghost">Reset</button>
-      </div>
-      <p class="hint">No backend storage is used for these preferences.</p>
-    </section>
+        <section class="section">
+          <h3>Quick Start</h3>
+          <ol>
+            <li>Go to Downloader and paste a YouTube URL. Click Analyze.</li>
+            <li>If a playlist is detected, simply click Download (<=720p).</li>
+            <li>For a single video, choose a quality or Custom formats, then Download.</li>
+            <li>Set the server output folder before starting.</li>
+          </ol>
 
-    <footer>Choose a quality for single videos; we auto-mux video+audio. Playlists <=720p. Fast, secure, and local — powered by yt-dlp and ffmpeg.</footer>
+          <div class="spacer"></div>
+          <h3>FAQs</h3>
+          <ul>
+            <li>Why separate video/audio streams? Higher resolutions are split; we mux for you.</li>
+            <li>Force a specific format? Use Custom and pick exact IDs (e.g., 137 + 140).</li>
+            <li>Where are files saved? The server’s output folder you specify.</li>
+            <li>Stuck at 0%? Check ffmpeg presence and firewall settings for SSE.</li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- PAGE: SETTINGS -->
+      <section id="page-settings" aria-label="Settings">
+        <section class="section">
+          <h2>Settings</h2>
+          <p>These settings live only in your browser (local state):</p>
+          <div class="row">
+            <div>
+              <label for="defaultOut">Default Output Folder</label>
+              <input id="defaultOut" type="text" placeholder="~/Downloads" />
+            </div>
+            <div>
+              <label for="rememberUrl">Remember Last URL</label>
+              <select id="rememberUrl">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+          <div class="buttons" style="margin-top:12px">
+            <button id="btnSaveSettings" class="primary">Save Settings</button>
+            <button id="btnResetSettings" class="ghost">Reset</button>
+          </div>
+          <p class="hint">No backend storage is used for these preferences.</p>
+        </section>
+      </section>
+    </main>
+
+    <footer>Choose a quality for single videos; we auto‑mux video+audio. Playlists <=720p. Fast, secure, and local — powered by yt‑dlp and ffmpeg.</footer>
   </div>
 
   <script>
-    // Theme toggle
+    // Theme and nav
     const THEME_KEY = 'tubemate_theme_v1';
     function applyTheme(t) {
       const root = document.documentElement;
       if (t === 'light') root.classList.add('light'); else root.classList.remove('light');
       const isLight = root.classList.contains('light');
-      document.getElementById('modeText').textContent = isLight ? 'Light' : 'Dark';
-      document.getElementById('modeIcon').textContent = isLight ? '☀️' : '🌙';
-      document.getElementById('modeToggle').setAttribute('aria-pressed', String(isLight));
+      const modeText = document.getElementById('modeText');
+      const modeIcon = document.getElementById('modeIcon');
+      if (modeText) modeText.textContent = isLight ? 'Light' : 'Dark';
+      if (modeIcon) modeIcon.textContent = isLight ? '☀️' : '🌙';
+      const toggle = document.getElementById('modeToggle');
+      if (toggle) toggle.setAttribute('aria-pressed', String(isLight));
     }
     function initTheme() {
       const saved = localStorage.getItem(THEME_KEY);
@@ -375,49 +402,61 @@
       applyTheme(nowLight ? 'light' : 'dark');
       localStorage.setItem(THEME_KEY, nowLight ? 'light' : 'dark');
     }
-    document.getElementById('modeToggle').addEventListener('click', toggleTheme);
-    initTheme();
+    document.addEventListener('DOMContentLoaded', () => {
+      const t = document.getElementById('modeToggle');
+      if (t) t.addEventListener('click', toggleTheme);
+      initTheme();
+    });
 
-    // Elements
+    // Simple client-side router
+    const routes = ['downloader','about','help','settings'];
+    function setActiveNav(route) {
+      document.querySelectorAll('nav.menu a[data-route]').forEach(a => {
+        const href = a.getAttribute('href') || '';
+        const r = (href.split('#/')[1] || '').toLowerCase();
+        a.classList.toggle('active', r === route);
+      });
+    }
+    function renderRoute() {
+      let r = (location.hash.startsWith('#/') ? location.hash.slice(2) : 'downloader').toLowerCase();
+      if (!routes.includes(r)) r = 'downloader';
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.remove('active'));
+      const page = document.getElementById('page-' + r);
+      if (page) page.classList.add('active');
+      setActiveNav(r);
+      if (r === 'settings') initSettingsUI();
+    }
+    window.addEventListener('hashchange', renderRoute);
+
+    // Downloader logic
     const els = {
-      yturl: document.getElementById('yturl'),
-      btnGet: document.getElementById('btnGet'),
-      btnClear: document.getElementById('btnClear'),
-      meta: document.getElementById('meta'),
-      qualitySection: document.getElementById('qualitySection'),
-      qualitySelect: document.getElementById('qualitySelect'),
-      customFormats: document.getElementById('customFormats'),
-      videoSelect: document.getElementById('videoSelect'),
-      audioSelect: document.getElementById('audioSelect'),
-      downloadOptions: document.getElementById('downloadOptions'),
-      outDir: document.getElementById('outDir'),
-      mode: document.getElementById('mode'),
-      btnDownload: document.getElementById('btnDownload'),
-      btnStop: document.getElementById('btnStop'),
-      status: document.getElementById('status'),
-      statusText: document.getElementById('statusText'),
-      bar: document.getElementById('bar'),
-      thumbWrap: document.getElementById('thumbWrap'),
-      thumb: document.getElementById('thumb'),
-      vtitle: document.getElementById('vtitle'),
-      pathError: document.getElementById('pathError'),
+      yturl: null, btnGet: null, btnClear: null, meta: null, qualitySection: null,
+      qualitySelect: null, customFormats: null, videoSelect: null, audioSelect: null,
+      downloadOptions: null, outDir: null, mode: null, btnDownload: null, btnStop: null,
+      status: null, statusText: null, bar: null, thumbWrap: null, thumb: null, vtitle: null, pathError: null
     };
+    let sse = null, lastIsPlaylist = false, cachedTitle = '', analyzedUrl = '';
 
-    let sse = null;
-    let lastIsPlaylist = false;
-    let cachedTitle = '';
-    let analyzedUrl = '';
-
+    function q(id) { return document.getElementById(id); }
+    function initDownloaderRefs() {
+      els.yturl = q('yturl'); els.btnGet = q('btnGet'); els.btnClear = q('btnClear');
+      els.meta = q('meta'); els.qualitySection = q('qualitySection'); els.qualitySelect = q('qualitySelect');
+      els.customFormats = q('customFormats'); els.videoSelect = q('videoSelect'); els.audioSelect = q('audioSelect');
+      els.downloadOptions = q('downloadOptions'); els.outDir = q('outDir'); els.mode = q('mode');
+      els.btnDownload = q('btnDownload'); els.btnStop = q('btnStop'); els.status = q('status'); els.statusText = q('statusText');
+      els.bar = q('bar'); els.thumbWrap = q('thumbWrap'); els.thumb = q('thumb'); els.vtitle = q('vtitle'); els.pathError = q('pathError');
+    }
     function validatePath() {
-      const ok = !!els.outDir.value.trim();
-      els.btnDownload.disabled = !ok;
-      els.btnDownload.setAttribute('aria-disabled', String(!ok));
-      els.pathError.style.display = ok ? 'none' : 'block';
+      const ok = !!(els.outDir && els.outDir.value.trim());
+      if (els.btnDownload) {
+        els.btnDownload.disabled = !ok;
+        els.btnDownload.setAttribute('aria-disabled', String(!ok));
+      }
+      if (els.pathError) els.pathError.style.display = ok ? 'none' : 'block';
       return ok;
     }
-    els.outDir.addEventListener('input', validatePath);
-
     function setStatus(msg, pct=null, isError=false) {
+      if (!els.status || !els.statusText || !els.bar) return;
       els.status.style.display = 'block';
       els.statusText.textContent = msg;
       els.statusText.className = isError ? 'error' : '';
@@ -425,10 +464,10 @@
         els.bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
       }
     }
-
+    function stopSSE() { if (sse) { sse.close(); sse = null; } }
     function resetUI(hideStatus=false) {
-      els.meta.style.display = 'none';
-      els.meta.innerHTML = '';
+      if (!els.meta) return;
+      els.meta.style.display = 'none'; els.meta.innerHTML = '';
       els.qualitySection.style.display = 'none';
       els.customFormats.style.display = 'none';
       els.videoSelect.innerHTML = '';
@@ -438,25 +477,20 @@
       els.thumbWrap.style.display = 'none';
       els.vtitle.textContent = '';
       els.thumb.src = '';
-      cachedTitle = '';
-      lastIsPlaylist = false;
-      analyzedUrl = '';
+      cachedTitle = ''; lastIsPlaylist = false; analyzedUrl = '';
       stopSSE();
       validatePath();
     }
-
     function isPlaylistUrl(u) {
       const s = (u || '').toLowerCase();
       return /[?&]list=/.test(s) || /\/playlist/.test(s);
     }
-
     async function analyze() {
       resetUI();
       const url = els.yturl.value.trim();
       if (!url) { setStatus('Please paste a YouTube link.', null, true); return; }
       analyzedUrl = url;
       setStatus('Analyzing…', 0);
-
       try {
         const res = await fetch('/get_formats?url=' + encodeURIComponent(url));
         const data = await res.json();
@@ -465,7 +499,7 @@
         cachedTitle = data.title || 'video';
         lastIsPlaylist = !!data.is_playlist || isPlaylistUrl(url);
 
-        // Meta chips
+        // chips
         els.meta.style.display = 'flex';
         els.meta.innerHTML = '';
         if (lastIsPlaylist) {
@@ -480,7 +514,7 @@
           els.meta.appendChild(chip2); els.meta.appendChild(chip3);
         }
 
-        // Preview
+        // preview
         els.thumbWrap.style.display = 'block';
         els.vtitle.textContent = cachedTitle;
         try {
@@ -488,7 +522,7 @@
           if (idMatch) { els.thumb.src = `https://i.ytimg.com/vi/${idMatch[1]}/hqdefault.jpg`; } else { els.thumbWrap.style.display = 'none'; }
         } catch (_) { els.thumbWrap.style.display = 'none'; }
 
-        // Show options
+        // options
         els.downloadOptions.style.display = 'block';
         validatePath();
 
@@ -497,14 +531,12 @@
           els.mode.value = 'playlist';
           setStatus('Playlist detected. Ready to download at <=720p.', 0);
         } else {
-          // Populate custom format lists for advanced mode
           const vids = data.video_formats || [];
           const auds = data.audio_formats || [];
           function labelVideo(f) { return `${f.format_id} • ${f.height ? f.height+'p' : 'video'} ${f.fps ? f.fps+'fps' : ''} • .${f.ext} • ${f.filesize_hr || 'Unknown'}`; }
           function labelAudio(f) { return `${f.format_id} • ${f.abr ? f.abr+'kbps' : 'audio'} • .${f.ext} • ${f.filesize_hr || 'Unknown'}`; }
           els.videoSelect.innerHTML = vids.map(f => `<option value="${f.format_id}">${labelVideo(f)}</option>`).join('');
           els.audioSelect.innerHTML = auds.map(f => `<option value="${f.format_id}">${labelAudio(f)}</option>`).join('');
-
           els.qualitySection.style.display = 'block';
           els.customFormats.style.display = (els.qualitySelect.value === 'custom') ? 'grid' : 'none';
           els.mode.value = 'single';
@@ -514,11 +546,6 @@
         setStatus('Error: ' + e.message, null, true);
       }
     }
-
-    els.qualitySelect.addEventListener('change', () => {
-      els.customFormats.style.display = (els.qualitySelect.value === 'custom') ? 'grid' : 'none';
-    });
-
     function buildSingleQualityString() {
       const choice = els.qualitySelect.value;
       if (choice === 'custom') {
@@ -527,20 +554,15 @@
         if (!v || !a) return '';
         return `${v}+${a}`;
       }
-      // Auto quality profiles using yt-dlp selectors (video-only + bestaudio)
       if (choice === 'auto1080') return 'bv*[height<=1080][vcodec!=none][acodec=none]+ba';
       if (choice === 'auto720')  return 'bv*[height<=720][vcodec!=none][acodec=none]+ba';
       if (choice === 'auto480')  return 'bv*[height<=480][vcodec!=none][acodec=none]+ba';
       if (choice === 'auto360')  return 'bv*[height<=360][vcodec!=none][acodec=none]+ba';
       return '';
     }
-
-    function stopSSE() { if (sse) { sse.close(); sse = null; } }
-
     function startDownload() {
       if (!validatePath()) { setStatus('Output path is required.', null, true); return; }
       stopSSE();
-
       const url = analyzedUrl || els.yturl.value.trim();
       if (!url) { setStatus('Paste a URL and Analyze first.', null, true); return; }
 
@@ -549,7 +571,6 @@
 
       const out = els.outDir.value.trim();
       const params = new URLSearchParams({ url, download_path: out, is_playlist: String(mode === 'playlist') });
-
       if (mode !== 'playlist') {
         const q = buildSingleQualityString();
         if (!q) { setStatus('Please choose a quality or select both custom formats.', null, true); return; }
@@ -579,53 +600,60 @@
       };
       sse.onerror = () => { setStatus('Connection lost.', null, true); stopSSE(); };
     }
+    function initDownloaderPage() {
+      initDownloaderRefs();
+      if (!els.yturl) return;
+      els.outDir.addEventListener('input', validatePath);
+      els.qualitySelect.addEventListener('change', () => {
+        els.customFormats.style.display = (els.qualitySelect.value === 'custom') ? 'grid' : 'none';
+      });
+      els.btnGet.addEventListener('click', analyze);
+      els.btnClear.addEventListener('click', () => { els.yturl.value=''; resetUI(true); });
+      els.btnDownload.addEventListener('click', startDownload);
+      els.btnStop.addEventListener('click', stopSSE);
+      els.yturl.addEventListener('keydown', (e) => { if (e.key === 'Enter') analyze(); });
+      validatePath();
+    }
 
-    // Settings
+    // Settings page logic (local storage only)
     const settings = {
       key: 'tubemate_settings_v1',
       get() { try { return JSON.parse(localStorage.getItem(this.key) || '{}'); } catch { return {}; } },
       set(obj) { localStorage.setItem(this.key, JSON.stringify(obj)); }
     };
-    const defOut = document.getElementById('defaultOut');
-    const rememberUrl = document.getElementById('rememberUrl');
-    const btnSaveSettings = document.getElementById('btnSaveSettings');
-    const btnResetSettings = document.getElementById('btnResetSettings');
+    function initSettingsUI() {
+      const defOut = document.getElementById('defaultOut');
+      const rememberUrl = document.getElementById('rememberUrl');
+      const btnSave = document.getElementById('btnSaveSettings');
+      const btnReset = document.getElementById('btnResetSettings');
+      if (!defOut || !rememberUrl) return;
 
-    function applySettingsToUI() {
-      const s = settings.get();
-      defOut.value = s.defaultOut || '~/Downloads';
-      rememberUrl.value = s.rememberUrl === 'no' ? 'no' : 'yes';
-      els.outDir.value = s.defaultOut || '~/Downloads';
-      const lastUrl = (s.rememberUrl === 'yes') ? (s.lastUrl || '') : '';
-      document.getElementById('yturl').value = lastUrl;
-      validatePath();
-    }
-    function saveSettings() {
-      const s = settings.get();
-      s.defaultOut = defOut.value.trim() || '~/Downloads';
-      s.rememberUrl = rememberUrl.value;
-      if (s.rememberUrl === 'yes') s.lastUrl = document.getElementById('yturl').value.trim();
-      else delete s.lastUrl;
-      settings.set(s);
-      alert('Settings saved.');
-    }
-    function resetSettings() { localStorage.removeItem(settings.key); applySettingsToUI(); alert('Settings reset.'); }
+      function apply() {
+        const s = settings.get();
+        defOut.value = s.defaultOut || '~/Downloads';
+        rememberUrl.value = s.rememberUrl === 'no' ? 'no' : 'yes';
+        // Also push to downloader page default path if present
+        if (els.outDir) els.outDir.value = s.defaultOut || '~/Downloads';
+      }
+      function save() {
+        const s = settings.get();
+        s.defaultOut = defOut.value.trim() || '~/Downloads';
+        s.rememberUrl = rememberUrl.value;
+        settings.set(s);
+        alert('Settings saved.');
+      }
+      function reset() { localStorage.removeItem(settings.key); apply(); alert('Settings reset.'); }
 
-    // Events
-    els.btnGet.addEventListener('click', analyze);
-    els.btnClear.addEventListener('click', () => { els.yturl.value=''; resetUI(true); });
-    els.btnDownload.addEventListener('click', startDownload);
-    els.btnStop.addEventListener('click', stopSSE);
-    els.yturl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') analyze();
-      const s = settings.get();
-      if (s.rememberUrl === 'yes') { s.lastUrl = els.yturl.value; settings.set(s); }
+      apply();
+      btnSave && btnSave.addEventListener('click', save);
+      btnReset && btnReset.addEventListener('click', reset);
+    }
+
+    // Boot
+    document.addEventListener('DOMContentLoaded', () => {
+      renderRoute();
+      initDownloaderPage(); // downloader refs are present in DOM from start
     });
-    btnSaveSettings.addEventListener('click', saveSettings);
-    btnResetSettings.addEventListener('click', resetSettings);
-
-    // Init
-    applySettingsToUI();
   </script>
 </body>
 </html>
